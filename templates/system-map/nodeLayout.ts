@@ -4,7 +4,7 @@ import type { SystemMapNode } from "./types";
 
 export const CARD_WIDTH = 288;
 const GROUP_PADDING_X = 20;
-const GROUP_PADDING_TOP = 56;
+const GROUP_PADDING_TOP = 76;
 const GROUP_PADDING_BOTTOM = 20;
 export const GROUP_WIDTH = CARD_WIDTH + GROUP_PADDING_X * 2; // 328px
 const COLUMN_GAP = 96;

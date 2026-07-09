@@ -44,16 +44,6 @@ export default function SystemEdge({
           transition: "opacity 200ms ease, stroke-width 200ms ease",
         }}
       />
-      {data?.label && !dimmed && (
-        <EdgeLabelRenderer>
-          <div
-            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
-            className="pointer-events-none rounded-full border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[9px] text-slate-500 shadow-sm"
-          >
-            {data.label}
-          </div>
-        </EdgeLabelRenderer>
-      )}
     </>
   );
 }
