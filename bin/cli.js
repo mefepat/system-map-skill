@@ -9,7 +9,7 @@ const force = process.argv.includes("--force") || process.argv.includes("-f");
 
 // Color codes
 const gold = "\x1b[38;5;220m";
-const kiremit = "\x1b[38;5;166m";
+const kiremit = "\x1b[38;2;196;104;73m";
 const magenta = "\x1b[35m";
 const gray = "\x1b[90m";
 const reset = "\x1b[0m";
