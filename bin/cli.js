@@ -30,8 +30,8 @@ console.log(kiremit + `
   ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 ` + reset);
 
-console.log(magenta + `     System Map Skill CLI v${pkg.version}` + reset);
-console.log(gray + "     Website: www.patchtr.com | Email: info@patchtr.com" + reset);
+console.log(kiremit + `     System Map Skill CLI v${pkg.version}` + reset);
+console.log(kiremit + "     Website: www.patchtr.com | Email: info@patchtr.com" + reset);
 console.log("");
 
 // Define paths for the skill definition
