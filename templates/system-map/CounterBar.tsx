@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Share2, Sun, Moon } from "lucide-react";
+import { Share2, Sun, Moon, Search, X } from "lucide-react";
 import { CATEGORY_LABELS, type SystemCategory, type SystemNodeData } from "./data";
 import { CATEGORY_META, CATEGORY_ORDER } from "./categoryMeta";
 
@@ -11,6 +11,8 @@ interface CounterBarProps {
   onCategoryChange: (category: SystemCategory | null) => void;
   theme: "light" | "dark";
   onThemeToggle: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 export default function CounterBar({
@@ -19,6 +21,8 @@ export default function CounterBar({
   onCategoryChange,
   theme,
   onThemeToggle,
+  searchQuery,
+  onSearchChange,
 }: CounterBarProps) {
   const total = nodes.length;
   const dataStoreCount = nodes.filter((n) => n.category === "STORE_DATA").length;
@@ -38,6 +42,27 @@ export default function CounterBar({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Search bar */}
+          <div className="system-search-container">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search stack..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="system-search-input"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                className="system-search-clear"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-slate-500">
             <Counter value={total} label="nodes" />
             <Counter value={dataStoreCount} label="data stores" />

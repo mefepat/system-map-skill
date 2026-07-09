@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CATEGORY_META, CATEGORY_SHORT_LABEL } from "./categoryMeta";
 import { useReducedMotion } from "./useReducedMotion";
 import type { SystemNodeRenderData } from "./types";
@@ -20,6 +21,27 @@ export default function SystemNode({ data, selected }: NodeProps & { data: Syste
 
   const delay = reduced ? 0 : data.columnIndex * 0.09 + data.rowIndex * 0.045;
 
+  // Health check status simulation
+  const [health, setHealth] = useState<"loading" | "online" | "degraded" | "offline">("loading");
+
+  useEffect(() => {
+    // Generate a random loading state delay to make the map feel alive on mount
+    const loadTime = Math.random() * 900 + 300;
+    const timer = setTimeout(() => {
+      if (data.healthStatus) {
+        setHealth(data.healthStatus);
+      } else if (isPlanned) {
+        setHealth("offline");
+      } else if (isDeprecated) {
+        setHealth("degraded");
+      } else {
+        setHealth("online");
+      }
+    }, loadTime);
+
+    return () => clearTimeout(timer);
+  }, [data.healthStatus, isPlanned, isDeprecated]);
+
   return (
     <motion.div
       initial={reduced ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.92, y: 10 }}
@@ -33,6 +55,12 @@ export default function SystemNode({ data, selected }: NodeProps & { data: Syste
           focused ? `is-focused -translate-y-0.5 shadow-lg ${meta.glow}` : ""
         } ${selected ? "is-selected" : ""}`}
       >
+        {/* Pulsing Health Status Dot */}
+        <span
+          className={`health-dot ${health}`}
+          title={`Health status: ${health.toUpperCase()}`}
+        />
+
         <div className="mb-2 flex items-center justify-between gap-2">
           <span
             className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${meta.badge}`}
@@ -48,7 +76,7 @@ export default function SystemNode({ data, selected }: NodeProps & { data: Syste
           )}
         </div>
 
-        <h3 className="text-sm font-semibold text-slate-900 transition-colors">{data.title}</h3>
+        <h3 className="text-sm font-semibold text-slate-900 transition-colors pr-4">{data.title}</h3>
         {data.subtitle && (
           <p className="mt-0.5 font-mono text-[10px] text-slate-400">{data.subtitle}</p>
         )}

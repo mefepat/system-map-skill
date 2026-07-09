@@ -17,13 +17,14 @@ import { LayoutGrid, X, ArrowRight, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SystemNode from "./SystemNode";
 import SystemEdge from "./SystemEdge";
+import ColumnGroup from "./ColumnGroup";
 import CounterBar from "./CounterBar";
 import { buildColumnLayout } from "./nodeLayout";
 import { SYSTEM_EDGES, SYSTEM_NODES, type SystemCategory, type SystemNodeData } from "./data";
 import type { SystemNodeRenderData } from "./types";
 import { CATEGORY_META } from "./categoryMeta";
 
-const nodeTypes = { system: SystemNode };
+const nodeTypes = { system: SystemNode, group: ColumnGroup };
 const edgeTypes = { system: SystemEdge };
 
 export default function SystemMap() {
@@ -31,8 +32,9 @@ export default function SystemMap() {
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [baseNodes, setBaseNodes, onNodesChange] = useNodesState<Node<SystemNodeRenderData>>(
+  const [baseNodes, setBaseNodes, onNodesChange] = useNodesState<Node<any>>(
     useMemo(() => buildColumnLayout(SYSTEM_NODES), []),
   );
 
@@ -60,43 +62,96 @@ export default function SystemMap() {
         if (sourceNode) incoming.push(sourceNode);
       }
       if (edge.source === selectedNodeId) {
-        const targetNode = SYSTEM_NODES.find((n) => n.id === edge.target);
-        if (targetNode) outgoing.push(targetNode);
+        const targetNode = SYSTEM_NODES.find((n) => n.id === edge.source ? edge.target : edge.source); // fallback guard
+        const realTarget = SYSTEM_NODES.find((n) => n.id === edge.target);
+        if (realTarget) outgoing.push(realTarget);
       }
     }
     return { incoming, outgoing };
   }, [selectedNodeId]);
 
-  const connectedIds = useMemo(() => {
-    if (!hoveredNodeId) return null;
-    const ids = new Set<string>([hoveredNodeId]);
-    for (const edge of SYSTEM_EDGES) {
-      if (edge.source === hoveredNodeId) ids.add(edge.target);
-      if (edge.target === hoveredNodeId) ids.add(edge.source);
+  // Search logic
+  const isSearching = searchQuery.trim().length > 0;
+  const matchingNodeIds = useMemo(() => {
+    if (!isSearching) return null;
+    const query = searchQuery.toLowerCase();
+    const matches = new Set<string>();
+
+    for (const n of SYSTEM_NODES) {
+      const titleMatch = n.title.toLowerCase().includes(query);
+      const descMatch = n.description.toLowerCase().includes(query);
+      const subMatch = n.subtitle?.toLowerCase().includes(query) || false;
+      const tagMatch = n.tags?.some((t) => t.toLowerCase().includes(query)) || false;
+      const catMatch = n.category.toLowerCase().includes(query);
+
+      if (titleMatch || descMatch || subMatch || tagMatch || catMatch) {
+        matches.add(n.id);
+      }
     }
-    return ids;
+    return matches;
+  }, [searchQuery, isSearching]);
+
+  // Flow path highlights (Upstream & Downstream tracing)
+  const tracedPaths = useMemo(() => {
+    if (!hoveredNodeId) return null;
+    const nodes = new Set<string>([hoveredNodeId]);
+    const edges = new Set<string>();
+
+    // Downstream recursive trace
+    const traceDownstream = (currentId: string) => {
+      for (const edge of SYSTEM_EDGES) {
+        if (edge.source === currentId && !nodes.has(edge.target)) {
+          nodes.add(edge.target);
+          edges.add(edge.id);
+          traceDownstream(edge.target);
+        }
+      }
+    };
+
+    // Upstream recursive trace
+    const traceUpstream = (currentId: string) => {
+      for (const edge of SYSTEM_EDGES) {
+        if (edge.target === currentId && !nodes.has(edge.source)) {
+          nodes.add(edge.source);
+          edges.add(edge.id);
+          traceUpstream(edge.source);
+        }
+      }
+    };
+
+    traceDownstream(hoveredNodeId);
+    traceUpstream(hoveredNodeId);
+
+    return { nodes, edges };
   }, [hoveredNodeId]);
 
-  const nodes = useMemo<Node<SystemNodeRenderData>[]>(
+  const nodes = useMemo<Node<any>[]>(
     () =>
       baseNodes.map((node) => {
+        if (node.type === "group") return node; // column group stays static
+
         let visualState: SystemNodeRenderData["visualState"] = "normal";
         if (hoveredNodeId) {
-          visualState = connectedIds?.has(node.id) ? "focused" : "dimmed";
+          visualState = tracedPaths?.nodes.has(node.id) ? "focused" : "dimmed";
+        } else if (isSearching) {
+          visualState = matchingNodeIds?.has(node.id) ? "focused" : "dimmed";
         } else if (activeCategory) {
           visualState = node.data.category === activeCategory ? "focused" : "dimmed";
         }
         return { ...node, data: { ...node.data, visualState } };
       }),
-    [baseNodes, activeCategory, hoveredNodeId, connectedIds],
+    [baseNodes, activeCategory, hoveredNodeId, tracedPaths, isSearching, matchingNodeIds],
   );
 
   const edges = useMemo(() => {
     return SYSTEM_EDGES.map((edge) => {
       let visualState: SystemNodeRenderData["visualState"] = "normal";
       if (hoveredNodeId) {
-        visualState =
-          edge.source === hoveredNodeId || edge.target === hoveredNodeId ? "focused" : "dimmed";
+        visualState = tracedPaths?.edges.has(edge.id) ? "focused" : "dimmed";
+      } else if (isSearching) {
+        const sourceMatches = matchingNodeIds?.has(edge.source);
+        const targetMatches = matchingNodeIds?.has(edge.target);
+        visualState = sourceMatches && targetMatches ? "focused" : "dimmed";
       } else if (activeCategory) {
         const sourceNode = SYSTEM_NODES.find((n) => n.id === edge.source);
         const targetNode = SYSTEM_NODES.find((n) => n.id === edge.target);
@@ -117,9 +172,10 @@ export default function SystemMap() {
         data: { ...edge, visualState },
       };
     });
-  }, [activeCategory, hoveredNodeId]);
+  }, [activeCategory, hoveredNodeId, tracedPaths, isSearching, matchingNodeIds]);
 
-  const handleNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
+  const handleNodeMouseEnter = useCallback((_: unknown, node: Node) => {
+    if (node.type === "group") return;
     setHoveredNodeId(node.id);
   }, []);
 
@@ -128,6 +184,7 @@ export default function SystemMap() {
   }, []);
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+    if (node.type === "group") return;
     setSelectedNodeId(node.id);
   }, []);
 
@@ -135,7 +192,6 @@ export default function SystemMap() {
     setSelectedNodeId(null);
   }, []);
 
-  // Helper mapping for edge colors in case constants aren't fully resolved in edge compilation
   const EDGE_COLOR_MAP: Record<string, string> = {
     auth: "#f59e0b",
     data: "#34d399",
@@ -152,6 +208,8 @@ export default function SystemMap() {
         onCategoryChange={setActiveCategory}
         theme={theme}
         onThemeToggle={handleThemeToggle}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       <div className="relative flex-1 cursor-grab active:cursor-grabbing overflow-hidden">

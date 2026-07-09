@@ -21,12 +21,61 @@
   background-color: #ffffff;
   border-color: #e2e8f0;
   color: #1e293b;
+  position: relative;
   transition: all 200ms ease;
 }
 
 .system-map-container .system-node-card.is-selected {
   border-color: #64748b;
   box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Pulsing Health Indicator Dot */
+.system-map-container .health-dot {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.system-map-container .health-dot.loading {
+  background-color: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.3);
+  animation: health-pulse 1.2s infinite ease-in-out;
+}
+
+.system-map-container .health-dot.online {
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  animation: health-pulse 1.5s infinite ease-in-out;
+}
+
+.system-map-container .health-dot.degraded {
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  animation: health-pulse 1.5s infinite ease-in-out;
+}
+
+.system-map-container .health-dot.offline {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+  animation: health-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes health-pulse {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
+  }
 }
 
 /* Marching-ants edge flow. Disabled entirely under reduced motion. */
@@ -95,6 +144,48 @@
   color: #0f172a;
 }
 
+/* Search Bar styling (Light mode by default) */
+.system-map-container .system-search-container {
+  position: relative;
+  width: 180px;
+}
+
+.system-map-container .system-search-input {
+  width: 100%;
+  height: 32px;
+  padding-left: 32px;
+  padding-right: 28px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  font-size: 11px;
+  color: #334155;
+  outline: none;
+  transition: all 150ms ease;
+}
+
+.system-map-container .system-search-input:focus {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.1);
+}
+
+.system-map-container .system-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.system-map-container .system-search-clear:hover {
+  color: #475569;
+}
+
+/* Category column group background container */
+.system-map-container .system-column-group {
+  transition: all 200ms ease;
+}
+
 /* ========================================== */
 /* DARK MODE OVERRIDES                        */
 /* ========================================== */
@@ -107,6 +198,12 @@
 /* Dark mode grid dots */
 .system-map-container.dark .react-flow__background {
   opacity: 0.2;
+}
+
+/* Dark mode column group container */
+.system-map-container.dark .system-column-group {
+  background-color: rgba(15, 23, 42, 0.2);
+  border-color: #1e293b;
 }
 
 /* Dark mode node card */
@@ -146,7 +243,7 @@
 
 /* Dark mode CounterBar */
 .system-map-container.dark .system-counter-bar {
-  background-color: #0f172a/80 !important;
+  background-color: rgba(15, 23, 42, 0.8) !important;
   border-color: #1e293b !important;
 }
 
@@ -168,10 +265,22 @@
   color: #f8fafc !important;
 }
 
+/* Dark mode search bar */
+.system-map-container.dark .system-search-input {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+.system-map-container.dark .system-search-input:focus {
+  border-color: #334155;
+  box-shadow: 0 0 0 2px rgba(51, 65, 85, 0.2);
+}
+
 /* Dark mode buttons */
 .system-map-container.dark .system-tidy-btn,
 .system-map-container.dark .system-theme-toggle {
-  background-color: #0f172a/90 !important;
+  background-color: rgba(15, 23, 42, 0.9) !important;
   border-color: #1e293b !important;
   color: #cbd5e1 !important;
 }

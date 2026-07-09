@@ -15,6 +15,8 @@ export interface SystemNodeData extends Record<string, unknown> {
   description: string;
   tags?: string[];
   status?: NodeStatus;
+  healthUrl?: string;
+  healthStatus?: "online" | "degraded" | "offline";
 }
 
 export type EdgeKind = "auth" | "data" | "ai" | "http" | "deploy";
