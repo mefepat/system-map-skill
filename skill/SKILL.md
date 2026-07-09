@@ -1,8 +1,9 @@
 ---
 name: system-map
 description: >
-  Scaffolds a light/editorial, richly animated "System Map" page — a read-only React Flow
-  node-graph visualizing a project's own architecture (agents, surfaces, core subsystems,
+  Scaffolds a light/editorial, richly animated "System Map" page — a draggable (with a one-click
+  "Tidy" reset), read-only-for-edges React Flow node-graph visualizing a project's own
+  architecture (agents, surfaces, core subsystems,
   store/data, external & deploy). Two modes: embedded in an existing Next.js (App Router)
   project as a dev-only route, or as a standalone Next.js template repo meant to be published
   (e.g. to GitHub) with generic example data. Trigger when the user says "system map", "control
@@ -15,7 +16,8 @@ description: >
 Builds an architecture-visualization page: a column-organized, animated, hoverable node graph.
 Read this whole file before scaffolding — several steps encode gotchas discovered the hard way
 (Next.js special-file collision, TypeScript generic constraints, ESLint text-node rule, a
-light-theme opacity bug). Skipping them reproduces bugs already fixed once.
+light-theme opacity bug, fixed-row-height card overlap causing a click flicker). Skipping them
+reproduces bugs already fixed once.
 
 ## Step 0 — Confirm mode and target stack
 
@@ -87,7 +89,7 @@ only — don't persist it to `.npmrc`.
 | `components/CounterBar.tsx` | Top bar: title, counters derived from data (never hardcode), category filter pills with a sliding active-pill background. |
 | `data/exampleData.ts` (or `mockData.ts`) | Types + the inventory from Step 1. |
 | `lib/categoryMeta.ts` | Icon + color-class mapping per category (single source of truth for node badges, edge colors, filter pills). |
-| `lib/nodeLayout.ts` | Deterministic column-layout function. **Never name this file `layout.ts`** — see gotcha below. |
+| `lib/nodeLayout.ts` | Deterministic column-layout function with **per-node estimated height** (not a fixed row height — see gotcha below). **Never name this file `layout.ts`**. |
 | `lib/types.ts` | Render-time types that extend the data types with `visualState` (`"normal" \| "dimmed" \| "focused"`) and, for nodes, `columnIndex`/`rowIndex` for stagger timing. |
 | `lib/useReducedMotion.ts` | Hook reading `prefers-reduced-motion`, lazily initialized (see gotcha below). |
 | a small overrides CSS file | `.react-flow__attribution` styling only — don't hide attribution (license term), just recolor it. |
@@ -137,6 +139,48 @@ export function useReducedMotion(): boolean {
 Because this hook (and React Flow generally) reads `window`/`ResizeObserver`, render the map
 via `next/dynamic` with `{ ssr: false }` from a `"use client"` page — this sidesteps SSR/
 hydration mismatches entirely rather than guarding every browser API call.
+
+### Gotcha: a fixed `ROW_HEIGHT` overlaps cards with real (non-placeholder) content — and the overlap causes a click-triggered flicker
+
+Placeholder example data (1-2 short sentences) fits comfortably in a fixed row height like
+130-156px, so this bug hides in mode b (generic data) and only surfaces in mode a once real
+project descriptions go in. A real description that runs 3-4 lines overflows its fixed slot and
+visually overlaps the card below it — this reads as "text got cut off" (it didn't; it's just
+covered) and as "cards are nested/jumbled".
+
+Worse: React Flow elevates a node's z-index on click/select, which reorders overlapping DOM
+elements under the cursor. That reorder fires a spurious `mouseleave`/`mouseenter` pair, which
+flips the hover-highlight state (`focused` → `dimmed` → `focused`) — the user sees the card
+"flash" or "disappear and come back" on click. This looks like an animation bug but the root
+cause is layout overlap, not motion code — fixing the layout fixes the flicker too.
+
+**Fix: estimate each card's height from its actual content and stack cumulatively**, don't use
+one constant for every row:
+
+```ts
+const CHARS_PER_LINE = 36; // tuned to card width minus padding, ~12px font
+const LINE_HEIGHT = 17;
+const ROW_GAP = 28;
+
+function estimateNodeHeight(item: SystemNodeData): number {
+  let h = 44 + 20; // badge row + title
+  if (item.subtitle) h += 15;
+  const lines = Math.max(1, Math.ceil(item.description.length / CHARS_PER_LINE));
+  h += lines * LINE_HEIGHT + 6;
+  if (item.tags?.length) h += 26;
+  return h + 14; // bottom padding
+}
+```
+
+Stack each column cumulatively (`y += estimateNodeHeight(item) + ROW_GAP`) instead of
+`rowIndex * ROW_HEIGHT`. To vertically center shorter columns against the tallest one, compute
+each column's total height first, then offset `startY` by `(maxColumnHeight - thisColumnHeight)
+/ 2` — this also fixes the "cards crammed at the top, dead space at the bottom" complaint,
+since columns are no longer forced into uniform per-row slots.
+
+This is an estimate, not a DOM measurement — it doesn't need to be exact, just generous enough
+that real descriptions never overflow their reserved slot. **Verify with the project's actual
+longest description**, not the shortest placeholder, before calling layout done.
 
 ### Gotcha: on a light background, a 30%-opacity "dimmed" state reads as *invisible*, not muted
 
@@ -241,16 +285,40 @@ purposeful backdrop-blur top bar, no side-stripe borders.
   from Step 3 for JS-driven motion (framer-motion delays/durations → 0), and a plain CSS media
   query for anything defined in `@keyframes`.
 
-## Step 7 — React Flow props (locked-down, read-only feel)
+## Step 7 — React Flow props (draggable, with a one-click reset)
+
+Default to **draggable nodes + a "Tidy" reset button**, not a fully locked read-only layout.
+Users expect to nudge a card that's inconveniently placed or overlapping a neighbor (the
+estimate in Step 3's gotcha is generous but not pixel-perfect), and a one-click return to the
+computed layout is cheap to add and removes any pressure to get every position perfect:
 
 ```
-nodesDraggable={false}       // node dragging locked — layout stays intact
-nodesConnectable={false}     // read-only map, no new edges drawable
+nodesDraggable                // cards can be repositioned by hand
+nodesConnectable={false}      // still read-only for edges — no new connections drawable
 onNodeMouseEnter / onNodeMouseLeave  // drives the hover-highlight state
+onNodesChange={onNodesChange} // from useNodesState — required for dragging to work at all
 panOnDrag zoomOnScroll fitView fitViewOptions={{ padding: 0.15 }}
-colorMode="light"            // or "dark" for a dark-theme variant
+colorMode="light"             // or "dark" for a dark-theme variant
 proOptions={{ hideAttribution: false }}  // don't hide attribution — license term
 ```
+
+Only fall back to `nodesDraggable={false}` (fully locked) if the user explicitly asks for a
+strictly read-only map — confirm in Step 0 rather than assuming.
+
+Use `useNodesState` (from `@xyflow/react`) instead of a plain `useMemo` for the node array, so
+drags persist in state:
+
+```tsx
+const [baseNodes, setBaseNodes, onNodesChange] = useNodesState<Node<SystemNodeRenderData>>(
+  useMemo(() => buildColumnLayout(SYSTEM_NODES), []),
+);
+const handleTidy = useCallback(() => setBaseNodes(buildColumnLayout(SYSTEM_NODES)), [setBaseNodes]);
+```
+
+Layer hover/filter `visualState` on top of `baseNodes` in a second `useMemo` exactly as before
+— dragging only changes `position`, not the derived visual-state logic. Add a small floating
+"Tidy" button (bottom-right of the canvas, `position: absolute`) wired to `handleTidy`; give the
+card `cursor: grab` so the affordance is discoverable without a tooltip.
 
 Skip `<Controls />` and `<MiniMap />` — their default chrome clashes with a clean, custom look.
 
@@ -285,10 +353,13 @@ route, add the new route to its bypass condition for a full-screen look. Locate 
 
 ## Step 10 — Verify end to end
 
-1. `npm run dev`, open in a browser — confirm columns are aligned, entrance stagger plays once,
-   hovering a node highlights exactly its connected nodes/edges and dims the rest, a category
-   filter dims non-matching cards **without making them unreadable** (the opacity gotcha),
-   node dragging is locked, pan/zoom works, no console errors.
+1. `npm run dev`, open in a browser — confirm columns are aligned with **no card overlap**
+   (check against the project's actual longest description, not a short placeholder), entrance
+   stagger plays once, hovering a node highlights exactly its connected nodes/edges and dims the
+   rest, clicking a node does **not** cause it to flicker/disappear (a symptom of layout overlap
+   — see the `ROW_HEIGHT` gotcha), a category filter dims non-matching cards **without making
+   them unreadable** (the opacity gotcha), dragging a card repositions it and the "Tidy" button
+   restores the computed layout, pan/zoom works, no console errors.
 2. `npm run build` — must succeed (catches the `layout.ts` naming gotcha and TS generic issues).
 3. Mode a: `NODE_ENV=production npm run start` — confirm the route 404s, rest of site serves
    normally. Mode b: confirm `/` renders the map directly in a production build.

@@ -1,6 +1,6 @@
 # system-map-skill
 
-Installs the System Map Claude Code skill into your project in one step — a read-only,
+Installs the System Map Claude Code skill into your project in one step — a draggable,
 animated architecture-graph page for Next.js.
 
 ```
@@ -22,7 +22,7 @@ Then, in Claude Code:
 
 > add system map
 
-The skill scaffolds a read-only, animated architecture-graph page (React Flow + framer-motion)
+The skill scaffolds a draggable, animated architecture-graph page (React Flow + framer-motion)
 for your Next.js App Router project — either embedded as a dev-only route, or as a standalone
 publishable template.
 
