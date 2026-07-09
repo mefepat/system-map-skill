@@ -15,7 +15,7 @@ export default function ColumnGroup({ data }: ColumnGroupProps) {
   const Icon = meta.icon;
 
   return (
-    <div className="system-column-group flex h-full w-full flex-col rounded-2xl border border-dashed border-slate-200 bg-slate-50/20 p-5 transition-colors">
+    <div className="system-column-group flex h-full w-full flex-col rounded-2xl bg-slate-50/10 p-5 transition-colors">
       <div className="flex items-center gap-2 mb-4">
         <span
           className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${meta.badge}`}

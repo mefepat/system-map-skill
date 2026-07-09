@@ -69,25 +69,25 @@ export default function SystemNode({ data, selected }: NodeProps & { data: Syste
             {CATEGORY_SHORT_LABEL[data.category]}
           </span>
           {isPlanned && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400">
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
               <Clock className="h-3 w-3" />
               planned
             </span>
           )}
         </div>
 
-        <h3 className="text-sm font-semibold text-slate-900 transition-colors pr-4">{data.title}</h3>
+        <h3 className="text-sm font-semibold transition-colors pr-4">{data.title}</h3>
         {data.subtitle && (
-          <p className="mt-0.5 font-mono text-[10px] text-slate-400">{data.subtitle}</p>
+          <p className="node-subtitle mt-0.5 font-mono text-[10px]">{data.subtitle}</p>
         )}
-        <p className="mt-1.5 text-[12px] leading-snug text-slate-600 transition-colors">{data.description}</p>
+        <p className="node-description mt-1.5 text-[12px] leading-snug transition-colors">{data.description}</p>
 
         {data.tags && data.tags.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1">
             {data.tags.map((t) => (
               <span
                 key={t}
-                className="tag-pill rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] text-slate-500 transition-colors"
+                className="tag-pill rounded-full border px-1.5 py-0.5 text-[9px] transition-colors"
               >
                 {t}
               </span>

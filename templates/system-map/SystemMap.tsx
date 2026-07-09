@@ -14,7 +14,7 @@ import {
   MarkerType,
 } from "@xyflow/react";
 import { LayoutGrid, X, ArrowRight, Clock } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import SystemNode from "./SystemNode";
 import SystemEdge from "./SystemEdge";
 import ColumnGroup from "./ColumnGroup";
@@ -215,11 +215,11 @@ export default function SystemMap() {
         {/* Background ambient decorative blobs */}
         <div
           aria-hidden
-          className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-violet-200/40 blur-3xl dark:bg-violet-900/10"
+          className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-violet-200/40 blur-3xl"
         />
         <div
           aria-hidden
-          className="ambient-blob pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-900/10"
+          className="ambient-blob pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-sky-200/40 blur-3xl"
           style={{ animationDelay: "-9s" }}
         />
 
@@ -254,7 +254,7 @@ export default function SystemMap() {
         <button
           type="button"
           onClick={handleTidy}
-          className="system-tidy-btn absolute bottom-5 right-5 z-10 flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:border-slate-300 hover:text-slate-900"
+          className="system-tidy-btn absolute bottom-5 right-5 z-10 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-medium shadow-sm backdrop-blur-sm transition-colors"
         >
           <LayoutGrid className="h-3.5 w-3.5" strokeWidth={2.25} />
           Tidy
@@ -279,10 +279,10 @@ export default function SystemMap() {
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                className="system-details-drawer absolute right-0 top-0 bottom-0 z-30 flex h-full w-[384px] flex-col border-l border-slate-200 bg-white shadow-2xl transition-colors duration-200"
+                className="system-details-drawer absolute right-0 top-0 bottom-0 z-30 flex h-full w-[384px] flex-col shadow-2xl transition-colors duration-200"
               >
                 {/* Drawer Header */}
-                <div className="system-details-drawer-header flex items-center justify-between border-b border-slate-100 p-5">
+                <div className="system-details-drawer-header flex items-center justify-between p-5">
                   <span
                     className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
                       CATEGORY_META[selectedNode.category].badge
@@ -297,7 +297,7 @@ export default function SystemMap() {
                   <button
                     type="button"
                     onClick={() => setSelectedNodeId(null)}
-                    className="close-btn flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                    className="close-btn flex h-7 w-7 items-center justify-center rounded-full transition-colors"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -306,9 +306,9 @@ export default function SystemMap() {
                 {/* Drawer Body */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{selectedNode.title}</h2>
+                    <h2 className="text-lg font-bold">{selectedNode.title}</h2>
                     {selectedNode.subtitle && (
-                      <p className="mt-0.5 font-mono text-[11px] text-slate-400">{selectedNode.subtitle}</p>
+                      <p className="drawer-subtitle mt-0.5 font-mono text-[11px]">{selectedNode.subtitle}</p>
                     )}
                     {selectedNode.status === "planned" && (
                       <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-amber-500">
@@ -318,19 +318,19 @@ export default function SystemMap() {
                     )}
                   </div>
 
-                  <div className="system-details-section border-t border-slate-100 pt-5 space-y-2">
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Description</h4>
-                    <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{selectedNode.description}</p>
+                  <div className="system-details-section pt-5 space-y-2">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider">Description</h4>
+                    <p className="drawer-description text-xs leading-relaxed">{selectedNode.description}</p>
                   </div>
 
                   {selectedNode.tags && selectedNode.tags.length > 0 && (
-                    <div className="system-details-section border-t border-slate-100 pt-5 space-y-2.5">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tags</h4>
+                    <div className="system-details-section pt-5 space-y-2.5">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider">Tags</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {selectedNode.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="tag-pill rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 transition-colors"
+                            className="tag-pill rounded-full border px-2 py-0.5 text-[10px] transition-colors"
                           >
                             {tag}
                           </span>
@@ -340,23 +340,23 @@ export default function SystemMap() {
                   )}
 
                   {/* Incoming/Outgoing Connections */}
-                  <div className="system-details-section border-t border-slate-100 pt-5 space-y-4">
+                  <div className="system-details-section pt-5 space-y-4">
                     {/* Incoming Connections */}
                     {connections.incoming.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Depends On (Inputs)</h4>
+                        <h4 className="text-[11px] font-bold uppercase tracking-wider">Depends On (Inputs)</h4>
                         <div className="grid gap-1.5">
                           {connections.incoming.map((conn) => (
                             <button
                               key={conn.id}
                               type="button"
                               onClick={() => setSelectedNodeId(conn.id)}
-                              className="connection-item-btn flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/50 p-2.5 text-left text-xs font-medium text-slate-700"
+                              className="connection-item-btn flex items-center justify-between rounded-lg p-2.5 text-left text-xs font-medium"
                             >
                               <span className="flex items-center gap-2">
                                 {(() => {
                                   const ConnIcon = CATEGORY_META[conn.category].icon;
-                                  return <ConnIcon className="h-3.5 w-3.5 text-slate-400" />;
+                                  return <ConnIcon className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />;
                                 })()}
                                 {conn.title}
                               </span>
@@ -370,19 +370,19 @@ export default function SystemMap() {
                     {/* Outgoing Connections */}
                     {connections.outgoing.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Connects To (Outputs)</h4>
+                        <h4 className="text-[11px] font-bold uppercase tracking-wider">Connects To (Outputs)</h4>
                         <div className="grid gap-1.5">
                           {connections.outgoing.map((conn) => (
                             <button
                               key={conn.id}
                               type="button"
                               onClick={() => setSelectedNodeId(conn.id)}
-                              className="connection-item-btn flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/50 p-2.5 text-left text-xs font-medium text-slate-700"
+                              className="connection-item-btn flex items-center justify-between rounded-lg p-2.5 text-left text-xs font-medium"
                             >
                               <span className="flex items-center gap-2">
                                 {(() => {
                                   const ConnIcon = CATEGORY_META[conn.category].icon;
-                                  return <ConnIcon className="h-3.5 w-3.5 text-slate-400" />;
+                                  return <ConnIcon className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />;
                                 })()}
                                 {conn.title}
                               </span>
