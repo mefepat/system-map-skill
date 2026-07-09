@@ -7,16 +7,33 @@ const path = require("path");
 const pkg = require(path.join(__dirname, "..", "package.json"));
 const force = process.argv.includes("--force") || process.argv.includes("-f");
 
-// Print Patch Logo Banner (with escaped backslashes for correct template rendering)
-console.log("\x1b[36m%s\x1b[0m", `
+// Color codes
+const gold = "\x1b[38;5;220m";
+const orange = "\x1b[38;5;208m";
+const magenta = "\x1b[35m";
+const gray = "\x1b[90m";
+const reset = "\x1b[0m";
+
+// Print Flashy Orange/Gold Logo with Asterisk Star
+console.log(gold + `
+         *
+     \\\\   *   /
+   \\\\  \\\\  *  /  /
+==== ******* ====
+   /  /  *  \\\\  \\\\
+     /   *   \\\\
+         *` + reset);
+
+console.log(orange + `
     ____  ___  ______ ______ __  __
-   / __ \\/   |/_  __// ____// / / /
+   / __ \\\\/   |/_  __// ____// / / /
   / /_/ / /| | / /  / /    / /_/ / 
  / ____/ ___ |/ /  / /___ / __  /  
-/_/   /_/  |_/_/   \\____//_/ /_/   
-`);
-console.log("\x1b[35m%s\x1b[0m", `     System Map Skill CLI v${pkg.version}`);
-console.log("\x1b[90m%s\x1b[0m", "     Website: www.patchtr.com | Email: info@patchtr.com");
+/_/   /_/  |_/_/   \\\\____//_/ /_/   
+` + reset);
+
+console.log(magenta + `     System Map Skill CLI v${pkg.version}` + reset);
+console.log(gray + "     Website: www.patchtr.com | Email: info@patchtr.com" + reset);
 console.log("");
 
 // Define paths for the skill definition
