@@ -21,11 +21,19 @@ import ColumnGroup from "./ColumnGroup";
 import CounterBar from "./CounterBar";
 import { buildColumnLayout } from "./nodeLayout";
 import { SYSTEM_EDGES, SYSTEM_NODES, type SystemCategory, type SystemNodeData } from "./data";
-import type { SystemNodeRenderData } from "./types";
+import type { SystemNodeRenderData, SystemMapNode } from "./types";
 import { CATEGORY_META } from "./categoryMeta";
 
 const nodeTypes = { system: SystemNode, group: ColumnGroup };
 const edgeTypes = { system: SystemEdge };
+
+const EDGE_COLOR_MAP: Record<string, string> = {
+  auth: "#f59e0b",
+  data: "#34d399",
+  ai: "#a78bfa",
+  http: "#38bdf8",
+  deploy: "#fb7185",
+};
 
 export default function SystemMap() {
   const [activeCategory, setActiveCategory] = useState<SystemCategory | null>(null);
@@ -34,7 +42,7 @@ export default function SystemMap() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [baseNodes, setBaseNodes, onNodesChange] = useNodesState<Node<any>>(
+  const [baseNodes, setBaseNodes, onNodesChange] = useNodesState<SystemMapNode>(
     useMemo(() => buildColumnLayout(SYSTEM_NODES), []),
   );
 
@@ -62,7 +70,6 @@ export default function SystemMap() {
         if (sourceNode) incoming.push(sourceNode);
       }
       if (edge.source === selectedNodeId) {
-        const targetNode = SYSTEM_NODES.find((n) => n.id === edge.source ? edge.target : edge.source); // fallback guard
         const realTarget = SYSTEM_NODES.find((n) => n.id === edge.target);
         if (realTarget) outgoing.push(realTarget);
       }
@@ -125,7 +132,7 @@ export default function SystemMap() {
     return { nodes, edges };
   }, [hoveredNodeId]);
 
-  const nodes = useMemo<Node<any>[]>(
+  const nodes = useMemo<SystemMapNode[]>(
     () =>
       baseNodes.map((node) => {
         if (node.type === "group") return node; // column group stays static
@@ -191,14 +198,6 @@ export default function SystemMap() {
   const handlePaneClick = useCallback(() => {
     setSelectedNodeId(null);
   }, []);
-
-  const EDGE_COLOR_MAP: Record<string, string> = {
-    auth: "#f59e0b",
-    data: "#34d399",
-    ai: "#a78bfa",
-    http: "#38bdf8",
-    deploy: "#fb7185",
-  };
 
   return (
     <div className={`system-map-container flex h-screen w-screen flex-col overflow-hidden text-slate-800 antialiased ${theme === "dark" ? "dark" : ""}`}>

@@ -1,7 +1,6 @@
-import type { Node } from "@xyflow/react";
 import type { SystemCategory, SystemNodeData } from "./data";
 import { CATEGORY_ORDER } from "./categoryMeta";
-import type { SystemNodeRenderData } from "./types";
+import type { SystemMapNode } from "./types";
 
 export const CARD_WIDTH = 288;
 const GROUP_PADDING_X = 20;
@@ -38,7 +37,7 @@ const COLUMN_X: Record<SystemCategory, number> = CATEGORY_ORDER.reduce(
   {} as Record<SystemCategory, number>,
 );
 
-export function buildColumnLayout(nodes: SystemNodeData[]): Node<any>[] {
+export function buildColumnLayout(nodes: SystemNodeData[]): SystemMapNode[] {
   const byCategory = new Map<SystemCategory, SystemNodeData[]>();
   for (const cat of CATEGORY_ORDER) byCategory.set(cat, []);
   for (const n of nodes) byCategory.get(n.category)?.push(n);
@@ -53,7 +52,7 @@ export function buildColumnLayout(nodes: SystemNodeData[]): Node<any>[] {
   const maxColumnHeight = Math.max(...columnHeights);
 
   // Return column group containers first, followed by system card nodes
-  const layoutNodes: Node<any>[] = [];
+  const layoutNodes: SystemMapNode[] = [];
 
   CATEGORY_ORDER.forEach((cat, columnIndex) => {
     const items = byCategory.get(cat) ?? [];
