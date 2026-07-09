@@ -4,7 +4,20 @@
 const fs = require("fs");
 const path = require("path");
 
+const pkg = require(path.join(__dirname, "..", "package.json"));
 const force = process.argv.includes("--force") || process.argv.includes("-f");
+
+// Print Patch Logo Banner (with escaped backslashes for correct template rendering)
+console.log("\x1b[36m%s\x1b[0m", `
+    ____  ___  ______ ______ __  __
+   / __ \\/   |/_  __// ____// / / /
+  / /_/ / /| | / /  / /    / /_/ / 
+ / ____/ ___ |/ /  / /___ / __  /  
+/_/   /_/  |_/_/   \\____//_/ /_/   
+`);
+console.log("\x1b[35m%s\x1b[0m", `     System Map Skill CLI v${pkg.version}`);
+console.log("\x1b[90m%s\x1b[0m", "     Website: www.patchtr.com | Email: info@patchtr.com");
+console.log("");
 
 // Define paths for the skill definition
 const skillSrc = path.join(__dirname, "..", "skill", "SKILL.md");
@@ -32,7 +45,7 @@ if (fs.existsSync(templatesSrcDir)) {
 }
 
 if (conflicts.length > 0) {
-  console.error("system-map-skill: The following files already exist:");
+  console.error("\x1b[31m%s\x1b[0m", "system-map-skill: The following files already exist:");
   conflicts.forEach(file => console.error(`  - ${file}`));
   console.error("Re-run with --force or -f to overwrite existing files.");
   process.exit(1);
@@ -79,7 +92,7 @@ if (!agentsMdContent.includes(ruleHeader)) {
 }
 
 console.log("");
-console.log("Next step: open this project in Claude Code and say \"add system map\"");
+console.log("\x1b[36m%s\x1b[0m", "Next step: open this project in Claude Code and say \"add system map\"");
 console.log("(or \"sistem haritası ekle\") — the agent will install dependencies,");
 console.log("analyze your codebase, and populate components/system-map/data.ts.");
 console.log("");
