@@ -1,6 +1,6 @@
 {
   "name": "system-map-skill",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Installs the System Map Claude Code skill into your project — scaffolds a draggable, animated architecture-graph page for Next.js.",
   "license": "MIT",
   "repository": {
