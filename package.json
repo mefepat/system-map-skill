@@ -1,8 +1,16 @@
 {
   "name": "system-map-skill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Installs the System Map Claude Code skill into your project — scaffolds a read-only, animated architecture-graph page for Next.js.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mefepat/system-map-skill.git"
+  },
+  "homepage": "https://github.com/mefepat/system-map-skill#readme",
+  "bugs": {
+    "url": "https://github.com/mefepat/system-map-skill/issues"
+  },
   "type": "commonjs",
   "bin": {
     "system-map-skill": "bin/cli.js"

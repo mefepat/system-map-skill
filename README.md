@@ -1,6 +1,7 @@
 # system-map-skill
 
-Installs the [System Map](https://github.com/) Claude Code skill into your project in one step.
+Installs the System Map Claude Code skill into your project in one step — a read-only,
+animated architecture-graph page for Next.js.
 
 ```
 npx system-map-skill
