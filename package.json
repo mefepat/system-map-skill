@@ -17,7 +17,8 @@
   },
   "files": [
     "bin",
-    "skill"
+    "skill",
+    "templates"
   ],
   "keywords": [
     "claude-code",
